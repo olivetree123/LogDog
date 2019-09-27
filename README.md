@@ -50,7 +50,7 @@ logdog
 ```
 
 ### 配置说明
-配置文件采用的是 toml 格式，详情可参考[TOML](https://github.com/toml-lang/toml)
+配置文件采用的是 toml 格式，详情可参考[TOML](https://github.com/toml-lang/toml)  
 配置分为 3 个部分，input/handler/output
 #### 1. input
 仅支持文件格式的 input，参数说明如下：
@@ -97,9 +97,10 @@ input 取出数据做简单的处理之后，会将结果交给 handler.
 
 ##### lua 脚本
 handler 还可以执行 lua 脚本。通过参数 `script_path` 指定 lua 脚本的路径。  
-在 lua 脚本中，必须包含 `myHandler` 方法，logdog 只会执行该方法。该方法会有一个参数，logdog 会将`add_data`处理之后的结果传递给 `myHandler` 方法，并使用该方法的返回值替换原有的数据结果。  
-lua 脚本示例
+在 lua 脚本中，必须包含 `myHandler` 方法，logdog 只会执行该方法。
+`myHandler` 方法有一个参数，logdog 会将`add_data`处理之后的结果传递给该方法，并使用该方法的返回值替换原有的数据结果。  
 ```lua
+-- lua 脚本示例
 -- myHandler 方法不可少，logdog 只会执行该方法
 -- 该方法有且仅有一个参数， logdog 会将 input 和 add_data 处理之后的结果传递过来
 -- 该方法有返回值，返回值为二进制格式
@@ -116,7 +117,7 @@ function myHandler(dataBytes)
     return json.encode(data)
 end
 ```
-**注意 1：myHandler 方法不可少，logdog 只会执行该方法**
+**注意 1：myHandler 方法不可少，logdog 只会执行该方法**  
 **注意 2：参数和返回值都是使用 `json.encode` 生成的二进制对象**
 
 #### 3. output
