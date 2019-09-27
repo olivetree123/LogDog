@@ -14,6 +14,9 @@ type Handler struct {
 }
 
 func NewHandlers(handlerData map[string]interface{}) map[string]Handler {
+	if handlerData == nil {
+		return nil
+	}
 	handlers := make(map[string]Handler)
 	for label, handlerObj := range handlerData {
 		handler := Handler{}

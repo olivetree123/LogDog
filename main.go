@@ -341,12 +341,20 @@ func main() {
 		Logger.Error(err)
 		return
 	}
-	inputData := MainConfig.Get("input").(map[string]interface{})
-	outputData := MainConfig.Get("output").(map[string]interface{})
-	handlerData := MainConfig.Get("handler").(map[string]interface{})
-	Inputs = entity.NewInputs(inputData)
-	Outputs = entity.NewOutputs(outputData)
-	Handlers = entity.NewHandlers(handlerData)
+	inputData := MainConfig.Get("input")
+	outputData := MainConfig.Get("output")
+	handlerData := MainConfig.Get("handler")
+	if inputData == nil {
+		Logger.Error("no input found")
+		return
+	}
+	if outputData == nil {
+		Logger.Error("no output found")
+		return
+	}
+	Inputs = entity.NewInputs(inputData.(map[string]interface{}))
+	Outputs = entity.NewOutputs(outputData.(map[string]interface{}))
+	Handlers = entity.NewHandlers(handlerData.(map[string]interface{}))
 	for label := range Inputs {
 		readFile(label)
 	}
