@@ -1,12 +1,12 @@
 # LogDog
 
 ###
-LogDog 是一个日志采集、解析和上报的工具。  
+日志采集、解析和上报的工具。  
 类似于 logstash，但是比 logstash 小巧。  
 类似于 filebeat，但是能够解析日志。
 
 ### Install
-```javascript
+```shell
 wget -O - https://olivetree.oss-cn-hangzhou.aliyuncs.com/install.sh | bash
 ```
 
