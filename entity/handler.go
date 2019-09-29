@@ -1,9 +1,9 @@
 package entity
 
 import (
+	"errors"
 	"github.com/aarzilli/golua/lua"
 	"github.com/mitchellh/mapstructure"
-	. "logDog/common"
 	"sync"
 )
 
@@ -13,28 +13,26 @@ type Handler struct {
 	Lua        *lua.State `mapstructure:"-"`
 }
 
-func NewHandlers(handlerData map[string]interface{}) map[string]Handler {
+func NewHandlers(handlerData map[string]interface{}) (map[string]Handler, error) {
 	if handlerData == nil {
-		return nil
+		return nil, errors.New("handlerData is nil")
 	}
 	handlers := make(map[string]Handler)
 	for label, handlerObj := range handlerData {
 		handler := Handler{}
 		err := mapstructure.Decode(handlerObj, &handler)
 		if err != nil {
-			Logger.Error(err)
-			return nil
+			return nil, err
 		}
 		if handler.ScriptPath != "" {
 			handler.Lua = lua.NewState()
 			err = handler.Lua.DoFile(handler.ScriptPath)
 			if err != nil {
-				Logger.Error(err)
-				return nil
+				return nil, err
 			}
 			handler.Lua.OpenLibs()
 		}
 		handlers[label] = handler
 	}
-	return handlers
+	return handlers, nil
 }

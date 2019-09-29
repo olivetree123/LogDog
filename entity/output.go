@@ -2,7 +2,7 @@ package entity
 
 import (
 	"github.com/mitchellh/mapstructure"
-	. "logDog/common"
+	"os"
 )
 
 type Output struct {
@@ -12,18 +12,22 @@ type Output struct {
 	RedisAddr   string            `mapstructure:"redis_addr"`
 	RedisDB     int               `mapstructure:"redis_db"`
 	RedisKey    string            `mapstructure:"redis_key"`
+	HostName    string
 }
 
-func NewOutputs(outputData map[string]interface{}) map[string]Output {
+func NewOutputs(outputData map[string]interface{}) (map[string]Output, error) {
 	outputs := make(map[string]Output)
 	for label, outputObj := range outputData {
 		output := Output{}
 		err := mapstructure.Decode(outputObj, &output)
 		if err != nil {
-			Logger.Error(err)
-			return nil
+			return nil, err
+		}
+		output.HostName, err = os.Hostname()
+		if err != nil {
+			return nil, err
 		}
 		outputs[label] = output
 	}
-	return outputs
+	return outputs, nil
 }

@@ -1,3 +1,4 @@
 logdog
 *.tar.gz
 .idea
+upload.py
