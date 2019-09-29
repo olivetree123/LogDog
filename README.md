@@ -53,10 +53,10 @@ logdog
 配置文件采用的是 toml 格式，详情可参考[TOML](https://github.com/toml-lang/toml)  
 配置分为 3 个部分，input/handler/output
 #### 1. input
-仅支持文件格式的 input，参数说明如下：
+参数说明如下：
 ```javascript
 type    // 仅支持 file
-path    // 文件路径
+path    // 文件路径，/var/log/*.log
 format  // text/json，如果设置为 json，则 logdog 会将取出的数据进行反序列化，转换成 json 对象
 regex   // 正则表达式，必须包含 PatternName。format = json 时无效。
 ```
