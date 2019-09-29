@@ -58,6 +58,7 @@ logdog
 type    // 仅支持 file
 path    // 文件路径，/var/log/*.log
 format  // text/json，如果设置为 json，则 logdog 会将取出的数据进行反序列化，转换成 json 对象
+        // json 常用于 docker 容器日志
 regex   // 正则表达式，必须包含 PatternName。format = json 时无效。
 ```
 如果没有配置正则表达式，input 输出的数据是这样的：

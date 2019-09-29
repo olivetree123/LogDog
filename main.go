@@ -143,7 +143,11 @@ func readFile(label string) {
 						Logger.Info("continue")
 						continue
 					}
-					message, err := parseMessage(filePath, line, input.Format, input.CompiledRegex)
+					//var containerName string
+					//if input.FileMap != nil {
+					//	containerName = input.FileMap[filePath]
+					//}
+					message, err := parseMessage(filePath, line, input.Format, input.CompiledRegex, input.FileMap[filePath])
 					if err != nil {
 						Logger.Error(err)
 						signalChannel <- true
@@ -243,9 +247,10 @@ func handler(label string, message map[string]interface{}) map[string]interface{
 	return message
 }
 
-func parseMessage(filePath string, message string, format string, regex *regexp.Regexp) (map[string]interface{}, error) {
+func parseMessage(filePath string, message string, format string, regex *regexp.Regexp, containerName string) (map[string]interface{}, error) {
 	result := make(map[string]interface{})
 	result["_source"] = filePath
+	result["_container"] = containerName
 	if format == "json" {
 		var data interface{}
 		err := json.Unmarshal([]byte(message), &data)

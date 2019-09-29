@@ -1,10 +1,15 @@
 [input]
     [input.accesslog]
         type = "file"
-        path = "/Users/gao/test111"
+        cname = "s*"    # 容器名称，支持列表，支持通配符*
+        path = "/Users/gao/test111" # 文件路径，支持列表，支持通配符*
         format = "text"
-#        regex = "(\\w+) (\\S+) \\w+ (\\w+)"
         regex = "(?P<level>\\w+) (?P<time>\\S+) \\w+ (?P<name>\\w+)"
+    [input.docker]
+        type = "docker"
+        cname = ["s*"]
+        format = "text"
+        docker_log_path = "/var/lib/docker/containers/{ID}/{ID}-json.log"
 
 
 [handler]
