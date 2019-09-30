@@ -8,6 +8,5 @@ function myHandler(dataBytes)
     --for key, val in pairs(message) do
     --    print(key, val)
     --end
-    data["service"] = "gaojian"
     return json.encode(data)
 end

@@ -128,3 +128,6 @@ stdout  // 标准输出
 redis   // 输出到 redis 队列中(lpush)
 http    // 通过 http 接口输出
 ```
+### TODO
+input: RabbitMQ/Kafka/HTTP/UDP Socket  
+output: MySQL/Postgres/MongoDB/ES

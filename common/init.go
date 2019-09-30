@@ -4,7 +4,11 @@ import (
 	//"github.com/go-redis/redis"
 	"github.com/docker/docker/client"
 	"github.com/sirupsen/logrus"
+	"sync"
 )
+
+var RedisConnections sync.Map
+var MySQLConnections sync.Map
 
 func init() {
 	var err error

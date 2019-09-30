@@ -33,15 +33,15 @@ var MainConfigFile string
 var MetaConfigFile string
 
 func init() {
-	MainConfigDirPath = "/etc/logdog/"
-	MetaConfigDirPath = "/var/lib/logdog/"
+	MainConfigDirPath = "/Users/gao/logdog/"
+	MetaConfigDirPath = "/Users/gao/logdog/"
 	// MainConfigFile 默认值为 /etc/logdog/logdog.toml。但是你可以通过命令行自定义指定。
 	MainConfigFile = MainConfigDirPath + "logdog.toml"
 	// MetaConfigDirPath 默认值为 /var/lib/logdog/logdog_meta.toml，暂时不可以自定义。
 	MetaConfigFile = MetaConfigDirPath + "logdog_meta.toml"
 	flag.BoolVar(&cmdHelp, "h", false, "this help")
 	flag.BoolVar(&cmdVersion, "v", false, "show version")
-	flag.StringVar(&cmdConfig, "c", "/etc/logdog/logdog.toml", "set config file")
+	flag.StringVar(&cmdConfig, "c", "/Users/gao/logdog/logdog.toml", "set config file")
 }
 
 func prepareMetaConfigFile() error {
@@ -153,7 +153,12 @@ func readFile(label string) {
 						signalChannel <- true
 						return
 					}
-					message = handler(label, message)
+					err = handler(label, message)
+					if err != nil {
+						Logger.Error(err)
+						signalChannel <- true
+						return
+					}
 					err = output(label, message)
 					if err != nil {
 						Logger.Error(err)
@@ -231,7 +236,7 @@ func readFile(label string) {
 	wg.Wait()
 }
 
-func handler(label string, message map[string]interface{}) map[string]interface{} {
+func handler(label string, message *entity.Message) error {
 	handler := Handlers[label]
 	if handler.AddData != nil {
 		r := make(map[string]interface{})
@@ -239,30 +244,40 @@ func handler(label string, message map[string]interface{}) map[string]interface{
 			r[key.(string)] = val
 			return true
 		})
-		message["add_data"] = r
+		message.AddData = r
+		//msg["add_data"] = r
 	}
 	if handler.ScriptPath != "" {
-		message = runLuaScript(handler.Lua, message)
+		err := runLuaScript(handler.Lua, message)
+		if err != nil {
+			return err
+		}
 	}
-	return message
+	//return message
+	return nil
 }
 
-func parseMessage(filePath string, message string, format string, regex *regexp.Regexp, containerName string) (map[string]interface{}, error) {
-	result := make(map[string]interface{})
-	result["_source"] = filePath
-	result["_container"] = containerName
+func parseMessage(filePath string, data string, format string, regex *regexp.Regexp, containerName string) (*entity.Message, error) {
+	var message entity.Message
+	message.Source = filePath
+	message.Container = containerName
+	//result := make(map[string]interface{})
+	//result["_source"] = filePath
+	//result["_container"] = containerName
 	if format == "json" {
-		var data interface{}
-		err := json.Unmarshal([]byte(message), &data)
+		var d interface{}
+		err := json.Unmarshal([]byte(data), &d)
 		if err != nil {
 			return nil, err
 		}
-		result["message"] = data
+		message.Message = d
+		//result["message"] = d
 	} else if format == "text" {
 		if regex == nil {
-			result["message"] = message
+			message.Message = data
+			//result["message"] = data
 		} else {
-			match := regex.FindStringSubmatch(message)
+			match := regex.FindStringSubmatch(data)
 			r := make(map[string]string)
 			for i, name := range match {
 				if i == 0 {
@@ -274,53 +289,56 @@ func parseMessage(filePath string, message string, format string, regex *regexp.
 				}
 				r[key] = name
 			}
-			result["message"] = r
+			//result["message"] = r
+			message.Message = r
 		}
 	} else {
 		msg := fmt.Sprintf("invalid format = %s", format)
 		return nil, errors.New(msg)
 	}
-	return result, nil
+	return &message, nil
 }
 
-func output(label string, message map[string]interface{}) error {
+func output(label string, message *entity.Message) error {
 	var err error
 	output := Outputs[label]
-	message["_hostname"] = output.HostName
+	message.HostName = output.HostName
+	//message["_hostname"] = output.HostName
 	if output.Type == "stdout" {
 		Logger.Info(message)
 	} else if output.Type == "redis" {
 		err = process.OutputRedis(output, label, message)
 	} else if output.Type == "http" {
 		err = process.OutputHttp(output, message)
+	} else if output.Type == "mysql" {
+		err = process.OutputMySQL(output, label, message)
 	}
 	return err
 }
 
-func runLuaScript(Lua *lua.State, data map[string]interface{}) map[string]interface{} {
-	dataBytes, err := json.Marshal(data)
+func runLuaScript(Lua *lua.State, message *entity.Message) error {
+	dataBytes, err := json.Marshal(message.Message)
 	if err != nil {
-		Logger.Error(err)
-		return nil
+		return err
 	}
 	Lock.Lock()
 	Lua.GetField(lua.LUA_GLOBALSINDEX, "myHandler")
 	Lua.PushBytes(dataBytes)
 	err = Lua.Call(1, 1)
 	if err != nil {
-		Logger.Error(err)
-		return nil
+		return err
 	}
 	ret := Lua.ToBytes(1)
-	r := make(map[string]interface{})
+	//r := make(map[string]interface{})
+	var r interface{}
 	err = json.Unmarshal(ret, &r)
 	if err != nil {
-		Logger.Error(err)
-		return nil
+		return err
 	}
 	Lua.Pop(1)
 	Lock.Unlock()
-	return r
+	message.Message = r
+	return nil
 }
 
 func main() {

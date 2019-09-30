@@ -5,16 +5,16 @@
         path = "/Users/gao/test111" # 文件路径，支持列表，支持通配符*
         format = "text"
         regex = "(?P<level>\\w+) (?P<time>\\S+) \\w+ (?P<name>\\w+)"
-    [input.docker]
-        type = "docker"
-        cname = ["s*"]
-        format = "text"
-        docker_log_path = "/var/lib/docker/containers/{ID}/{ID}-json.log"
+#    [input.docker]
+#        type = "docker"
+#        cname = ["s*"]
+#        format = "text"
+#        docker_log_path = "/var/lib/docker/containers/{ID}/{ID}-json.log"
 
 
 [handler]
     [handler.accesslog]
-         script_path = "/Users/gao/code/gowork/src/logDog/myHandler.lua"      # lua 脚本路径
+        script_path = "/Users/gao/code/gowork/src/logDog/myHandler.lua"      # lua 脚本路径
         [handler.accesslog.add_data]
             school_id = "123"
             class_id = "123"
@@ -27,8 +27,15 @@
         http_url = "http://localhost:9000"
         [output.accesslog2.headers]
             Auth = "123456"
-    [output.accesslog]
+    [output.accesslog3]
         type = "redis"
         redis_addr = "localhost:6379"
         redis_db = 0
         redis_key = "logdog"
+    [output.accesslog]
+        type = "mysql"
+        mysql_host = "localhost"
+        mysql_port = 3306
+        mysql_db = "ischool"
+        mysql_user = "root"
+        mysql_password = "gaojian"
